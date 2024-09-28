@@ -1,38 +1,39 @@
 package com.example.drinklemonade
 
+import android.content.Context
+import android.media.MediaPlayer
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.progressSemantics
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.currentCompositionErrors
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -41,6 +42,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.drinklemonade.ui.theme.DrinkLemonadeTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -74,7 +78,6 @@ class MainActivity : ComponentActivity() {
                     }
 
                 }
-
             }
         }
     }
@@ -84,9 +87,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DrinkLemonadeApp(){
     LemonadeWithImageAndText(
-        modifier = Modifier
-            .fillMaxSize()
-            .wrapContentSize(Alignment.Center)
+        modifier = Modifier.fillMaxSize()
     )
 }
 
@@ -126,30 +127,41 @@ fun LemonadeWithImageAndText(modifier: Modifier = Modifier) {
             3 -> stringResource(id = R.string.description_3)
             else -> stringResource(id = R.string.description_4)
         }
+    
+    val context = LocalContext.current
 
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
 
         Button(
             onClick = {
                 when(currentStep) {
                     1 -> {
+                        playMusic(R.raw.chopping_tree_root, context)
                         currentStep = 2
                         numbersOfTaps = (2..4).random()
                     }
 
                     2-> {
+                        playMusic(R.raw.squeezing_lemon, context)
                         numbersOfTaps--
                         if(numbersOfTaps == 0){
                             currentStep = 3
                         }
                     }
 
-                    3 -> currentStep = 4
+                    3 -> {
+                        playMusic(R.raw.drinking_lemonade, context)
+                        currentStep = 4
+                    }
 
-                    4 -> currentStep = 1
+                    4 -> {
+                        playMusic(R.raw.glass_breaking, context)
+                        currentStep = 1
+                    }
                 }
             },
             colors = ButtonDefaults.buttonColors(Color(0xffc2ecd3)),
@@ -169,5 +181,12 @@ fun LemonadeWithImageAndText(modifier: Modifier = Modifier) {
             fontSize = 18.sp,
             color = Color.Black
         )
+    }
+}
+
+fun playMusic(mediaPlayerResId: Int, localContext: Context){
+    CoroutineScope(Dispatchers.IO).launch {
+        val media = MediaPlayer.create(localContext, mediaPlayerResId)
+        media?.start()
     }
 }
